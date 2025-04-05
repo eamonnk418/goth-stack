@@ -1,0 +1,19 @@
+package pages
+
+import "github.com/eamonnk418/goth-stack/internal/templates/layouts"
+import "github.com/eamonnk418/goth-stack/internal/templates/components"
+
+type Props struct {
+    Title string
+}
+
+templ HomePage(props Props) {
+    @layouts.Base(props.Title) {
+        <div>
+            <main>
+                <h1>Homepage</h1>
+                @components.LoginButton()
+            </main>
+        </div>
+    }
+}

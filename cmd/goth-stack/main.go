@@ -36,6 +36,7 @@ func main() {
 
 	// Web routes group
 	r.Route("/", func(r chi.Router) {
+		r.Get("/", handlers.HomeHandler{}.ServeHTTP)
 		// Define routes
 		r.Post("/users", userHandler.CreateUserViewModelHandler)
 		r.Get("/users/{id}", userHandler.GetUserViewModelHandler)

@@ -1,29 +1,33 @@
 package pages
 
 import "github.com/eamonnk418/goth-stack/internal/store"
+import "github.com/eamonnk418/goth-stack/internal/templates/layouts"
 
 // UserList component renders a list of users.
-templ UserList(users []store.User) {
-	<div>
-		<h1>User List</h1>
-		<ul>
-			for _, user := range users {
-				<li>
-					<strong>{ user.Name }</strong>
-					<span>Email: { user.Email }</span>
-				</li>
-			}
-		</ul>
-	</div>
+templ UserList(title string, users []store.User) {
+	@layouts.Base(title) {
+		<div>
+			<h1>User List</h1>
+			<ul>
+				for _, user := range users {
+					<li>
+						<strong>{ user.Name }</strong>
+						<span>Email: { user.Email }</span>
+					</li>
+				}
+			</ul>
+		</div>
+	}
 }
 
 // UserDetails component renders details of a User from the store package
-templ UserDetails(user store.User) {
-	<div>
-		<main>
-			<h1>User: { user.Name }</h1>
-			<p>Email: { user.Email }</p>
-			<!-- Add other user details here -->
-		</main>
-	</div>
+templ UserDetails(title string, user store.User) {
+	@layouts.Base(title) {
+		<div>
+			<main>
+				<h1>User: { user.Name }</h1>
+				<p>Email: { user.Email }</p>
+			</main>
+		</div>
+	}
 }

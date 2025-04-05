@@ -60,7 +60,7 @@ func (h *UserHandler) CreateUserViewModelHandler(w http.ResponseWriter, r *http.
 		return
 	}
 
-	component := pages.UserDetails(utils.PtrToVal(user))
+	component := pages.UserDetails("User", utils.PtrToVal(user))
 	component.Render(r.Context(), w)
 }
 
@@ -96,7 +96,7 @@ func (h *UserHandler) GetUserViewModelHandler(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	component := pages.UserDetails(utils.PtrToVal(user))
+	component := pages.UserDetails("User", utils.PtrToVal(user))
 	component.Render(r.Context(), w)
 }
 
@@ -120,6 +120,6 @@ func (h *UserHandler) ListUsersViewModelHandler(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	component := pages.UserList(utils.PtrToSliceVal(users))
+	component := pages.UserList("User", utils.PtrToSliceVal(users))
 	component.Render(r.Context(), w)
 }
