@@ -1,46 +1,69 @@
-// internal/handlers/auth_handler.go
 package handlers
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 
-	"github.com/eamonnk418/goth-stack/internal/auth"
+	"github.com/go-chi/chi/v5"
+	"github.com/markbates/goth/gothic"
 )
 
-// AuthHandler handles GitHub OAuth login.
-type AuthHandler struct {
-	Auth *auth.Auth
+// AuthHandler manages authentication routes.
+type AuthHandler struct{}
+
+func NewAuthHandler() *AuthHandler {
+	return &AuthHandler{}
 }
 
-// Login redirects the user to GitHub's OAuth2 consent page.
-func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
-	// In production, generate and store a unique state per session.
-	state := "randomStateString"
-	url := h.Auth.AuthCodeURL(state)
-	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
-}
-
-// Callback handles GitHub's OAuth2 callback.
+// Callback handles the OAuth callback from the provider.
 func (h *AuthHandler) Callback(w http.ResponseWriter, r *http.Request) {
-	// Validate the state parameter (omitted for brevity).
-	code := r.URL.Query().Get("code")
-	if code == "" {
-		http.Error(w, "Code not found", http.StatusBadRequest)
-		return
-	}
+	provider := chi.URLParam(r, "provider")
 
-	// Exchange the code for an access token.
-	token, err := h.Auth.Exchange(context.Background(), code)
+	// Store the provider in the context for gothic
+	ctx := context.WithValue(r.Context(), "provider", provider)
+	r = r.WithContext(ctx)
+
+	_, err := gothic.CompleteUserAuth(w, r)
 	if err != nil {
-		http.Error(w, "Code exchange failed: "+err.Error(), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Authentication failed: %v", err), http.StatusInternalServerError)
 		return
 	}
 
-	// Log the token for demonstration. In practice, use this token to create a client and fetch user data.
-	log.Printf("Access Token: %s", token.AccessToken)
+	log.Printf("Cookies on callback: %+v\n", r.Cookies())
 
-	// Redirect the user back to the application (home page).
-	http.Redirect(w, r, "/", http.StatusSeeOther)
+	// Here, you can create a session for the user
+	// For example, store user information in a session or database
+	// fmt.Fprintln(w, user)
+
+	// Redirect to the home page or dashboard after successful login
+	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+}
+
+// Login initiates the authentication process.
+func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
+	provider := chi.URLParam(r, "provider")
+
+	// Store the provider in the context for gothic
+	ctx := context.WithValue(r.Context(), "provider", provider)
+	r = r.WithContext(ctx)
+
+	gothic.BeginAuthHandler(w, r)
+}
+
+// Logout logs the user out and redirects to the home page.
+func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
+	provider := chi.URLParam(r, "provider")
+
+	// Store the provider in the context for gothic
+	r = r.WithContext(context.WithValue(r.Context(), "provider", provider))
+
+	if err := gothic.Logout(w, r); err != nil {
+		http.Error(w, fmt.Sprintf("Logout failed: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	// Redirect to the home page or login page after logout
+	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 }

@@ -4,15 +4,18 @@ go 1.24.2
 
 require (
 	github.com/go-chi/chi/v5 v5.2.1
+	github.com/gorilla/sessions v1.4.0
+	github.com/markbates/goth v1.81.0
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/viper v1.20.1
-	golang.org/x/oauth2 v0.25.0
 )
 
 require (
+	github.com/gorilla/context v1.1.1 // indirect
+	github.com/gorilla/mux v1.6.2 // indirect
+	github.com/gorilla/securecookie v1.1.2 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/rogpeppe/go-internal v1.12.0 // indirect
-	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
+	golang.org/x/oauth2 v0.25.0 // indirect
 )
 
 require (

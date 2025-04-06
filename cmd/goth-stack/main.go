@@ -2,6 +2,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -32,9 +33,11 @@ func main() {
 	// Initialize the handlers (HTTP layer) with the service injected
 	userHandler := handlers.NewUserHandler(userService)
 
+	fmt.Println("Config: ", cfg)
+
 	// Setup Auth handler
-	authInstance := auth.NewAuth(cfg)
-	authHandler := &handlers.AuthHandler{Auth: authInstance}
+	auth.NewAuth(cfg)
+	authHandler := handlers.NewAuthHandler()
 
 	// Set up Chi router
 	r := chi.NewRouter()
@@ -42,9 +45,10 @@ func main() {
 	r.Use(middleware.Recoverer)
 
 	// Auth routes group
-	r.Route("/auth/github", func(r chi.Router) {
-		r.Get("/", authHandler.Login)
-		r.Get("/callback", authHandler.Callback)
+	r.Route("/auth", func(r chi.Router) {
+		r.Get("/{provider}/callback", authHandler.Callback)
+		r.Get("/{provider}", authHandler.Login)
+		r.Get("/logout", authHandler.Logout)
 	})
 
 	// API routes group
