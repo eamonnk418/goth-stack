@@ -5,6 +5,8 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/eamonnk418/goth-stack/internal/auth"
+	"github.com/eamonnk418/goth-stack/internal/config"
 	"github.com/eamonnk418/goth-stack/internal/handlers"
 	"github.com/eamonnk418/goth-stack/internal/service"
 	"github.com/eamonnk418/goth-stack/internal/store"
@@ -13,6 +15,14 @@ import (
 )
 
 func main() {
+	// Load the config for our app
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		panic(err)
+	}
+
+	// we have the config but we need to share its state across the entire app
+
 	// Initialize the store (data access layer)
 	userStore := store.NewInMemoryUserStore()
 
@@ -22,10 +32,20 @@ func main() {
 	// Initialize the handlers (HTTP layer) with the service injected
 	userHandler := handlers.NewUserHandler(userService)
 
+	// Setup Auth handler
+	authInstance := auth.NewAuth(cfg)
+	authHandler := &handlers.AuthHandler{Auth: authInstance}
+
 	// Set up Chi router
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
+
+	// Auth routes group
+	r.Route("/auth/github", func(r chi.Router) {
+		r.Get("/", authHandler.Login)
+		r.Get("/callback", authHandler.Callback)
+	})
 
 	// API routes group
 	r.Route("/api", func(r chi.Router) {
